@@ -2,8 +2,8 @@ def alignCost(xs,ys):
     x = [[0]*(len(ys)+1) for c in range(len(xs)+1)]
     y = [[0]*(len(ys)+1) for c in range(len(xs)+1)]
     m = [[0]*(len(ys)+1) for c in range(len(xs)+1)]
-    gapstart = 11
-    gapextend = 1
+    gapstart = -11
+    gapextend = -1
     mp = [
             [4,'#',0,-2,-1,-2, 0,-2,-1,'#',-1,-1,-1,-2,'#',-1,-1,-1, 1, 0,'#',0,-3,'#',-2],
             [],
@@ -43,9 +43,9 @@ def alignCost(xs,ys):
     for i in xrange(len(xs)):
         for j in xrange(len(ys)):
             m[i+1][j+1] = max(
-                    cost(xs[i],ys[j]) + m(i,j),
-                    x(i,j),
-                    y(i,j)
+                    cost(xs[i],ys[j],mp) + m[i][j],
+                    x[i][j],
+                    y[i][j]
                     )
             x[i+1][j+1] = max(
                     gapstart + gapextend + m[i+1][j],
@@ -68,7 +68,7 @@ def cost(x,y,mp):
 main program
 """
 
-f = open("rosalind_glob.txt",'r')
+f = open("input.txt",'r')
 x = ""
 r = f.readline()
 r = f.readline()
