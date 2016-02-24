@@ -1,9 +1,11 @@
+test = True
 def alignCost(xs,ys):
     x = [[0]*(len(ys)+1) for c in range(len(xs)+1)]
     y = [[0]*(len(ys)+1) for c in range(len(xs)+1)]
     m = [[0]*(len(ys)+1) for c in range(len(xs)+1)]
     gapstart = -11
     gapextend = -1
+    INFINITY = 100
     mp = [
             [4,'#',0,-2,-1,-2, 0,-2,-1,'#',-1,-1,-1,-2,'#',-1,-1,-1, 1, 0,'#',0,-3,'#',-2],
             [],
@@ -33,17 +35,18 @@ def alignCost(xs,ys):
              ]
     # matrices initialization
     for i in xrange(len(ys)+1):
-        m[0][i] = -1000000
+        m[0][i] = -INFINITY
         x[0][i] = gapstart + gapextend * i 
-        y[0][i] = -1000000 
+        y[0][i] = -INFINITY 
     for i in xrange(len(xs)+1):
-        m[i][0] = -1000000
-        x[i][0] = -1000000 
+        m[i][0] = -INFINITY
+        x[i][0] = -INFINITY 
         y[i][0] = gapstart + gapextend * i 
+    m[0][0] = 0
     for i in xrange(len(xs)):
         for j in xrange(len(ys)):
-            m[i+1][j+1] = max(
-                    cost(xs[i],ys[j],mp) + m[i][j],
+            m[i+1][j+1] = cost(xs[i],ys[j],mp) + max(
+                    m[i][j],
                     x[i][j],
                     y[i][j]
                     )
@@ -57,6 +60,14 @@ def alignCost(xs,ys):
                     gapstart + gapextend + x[i][j+1],
                     gapextend + y[i][j+1]
                     )
+            if test == True:
+                print "step",i,j
+                for c in x:
+                    print c
+                for c in y:
+                    print c
+                for c in m:
+                    print c
     return max(x[-1][-1],y[-1][-1],m[-1][-1])
 
 def cost(x,y,mp):
@@ -85,6 +96,9 @@ while r != "":
     r = f.readline()
     r = r.strip()
 f.close()
+if test == True:
+    x = "PLEASANTLY"
+    y =  "MEANLY"
 
 score = alignCost(x,y)
 print score
