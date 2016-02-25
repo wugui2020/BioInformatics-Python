@@ -1,11 +1,9 @@
-test = True
-def alignCost(xs,ys):
+test = False
+def alignCost(xs,ys,gapstart,gapextend):
     x = [[0]*(len(ys)+1) for c in range(len(xs)+1)]
     y = [[0]*(len(ys)+1) for c in range(len(xs)+1)]
     m = [[0]*(len(ys)+1) for c in range(len(xs)+1)]
-    gapstart = -11
-    gapextend = -1
-    INFINITY = 100
+    INFINITY = 100000
     mp = [
             [4,'#',0,-2,-1,-2, 0,-2,-1,'#',-1,-1,-1,-2,'#',-1,-1,-1, 1, 0,'#',0,-3,'#',-2],
             [],
@@ -36,12 +34,12 @@ def alignCost(xs,ys):
     # matrices initialization
     for i in xrange(len(ys)+1):
         m[0][i] = -INFINITY
-        x[0][i] = gapstart + gapextend * i 
-        y[0][i] = -INFINITY 
+        x[0][i] = 0 #gapstart + gapextend * i 
+        y[0][i] = 0 #-INFINITY 
     for i in xrange(len(xs)+1):
         m[i][0] = -INFINITY
-        x[i][0] = -INFINITY 
-        y[i][0] = gapstart + gapextend * i 
+        x[i][0] = 0# -INFINITY 
+        y[i][0] = 0#gapstart + gapextend * i 
     m[0][0] = 0
     for i in xrange(len(xs)):
         for j in xrange(len(ys)):
@@ -51,54 +49,118 @@ def alignCost(xs,ys):
                     y[i][j]
                     )
             x[i+1][j+1] = max(
-                    gapstart + gapextend + m[i+1][j],
+                    gapstart + m[i+1][j],
                     gapextend + x[i+1][j],
-                    gapstart + gapextend + y[i+1][j]
+                    gapstart + y[i+1][j]
                     )
             y[i+1][j+1] = max(
-                    gapstart + gapextend + m[i][j+1],
-                    gapstart + gapextend + x[i][j+1],
+                    gapstart + m[i][j+1],
+                    gapstart + x[i][j+1],
                     gapextend + y[i][j+1]
                     )
-            if test == True:
-                print "step",i,j
-                for c in x:
-                    print c
-                for c in y:
-                    print c
-                for c in m:
-                    print c
-    return max(x[-1][-1],y[-1][-1],m[-1][-1])
+    return x,y,m
 
 def cost(x,y,mp):
     a = ord(x)-ord('A')
     b = ord(y)-ord('A')
     return mp[a][b]
 
+def traceback(xs,ys,x,y,m,gapstart,gapextend):
+    a = []
+    b = []
+    xi = -1
+    yi = -1
+    i = -1
+    j = -1
+    currentMatrix = None
+    flag = False
+    maxitem = None
+    for array in m:
+        if max(array) > maxitem:
+            maxitem = max(array)
+    while i > -len(xs)-1 and j > -len(ys)-1:
+        if currentMatrix != None and flag == True and currentMatrix[i][j] == 0:
+            break
+        if m[i][j] == maxitem or x[i][j] == maxitem or y[i][j] == maxitem:
+            flag = True
+        if currentMatrix == None or currentMatrix == m:
+            candidates = (m[i][j],x[i][j],y[i][j])
+        elif currentMatrix == x:
+            candidates = (
+                     gapstart + m[i][j],
+                     gapextend + x[i][j],
+                     gapstart + y[i][j]
+                     )
+        else:
+            candidates = (
+                     gapstart + m[i][j],
+                     gapstart + x[i][j],
+                     gapextend + y[i][j]
+                     )
+        ma = max(candidates)
+        if ma == candidates[0]:
+            currentMatrix = m
+            if flag:
+                a.append(xs[xi])
+                b.append(ys[yi])
+            xi -= 1
+            yi -= 1
+            i -= 1
+            j -= 1
+        elif ma == candidates[1]:
+            currentMatrix = x
+            if flag:
+                b.append(ys[yi])
+            yi -= 1
+            j -= 1
+        else:
+            currentMatrix = y
+            if flag:
+                a.append(xs[xi])
+            xi -= 1
+            i -= 1
+    return a,b,maxitem
+
+
 """
 main program
 """
 
-f = open("input.txt",'r')
-x = ""
+f = open("rosalind_laff.txt",'r')
+xs = ""
 r = f.readline()
 r = f.readline()
 r = r.strip()
 while r[0] != '>':
-    x += r
+    xs += r
     r = f.readline()
     r = r.strip()
 r = f.readline()
 r = r.strip()
-y = ""
+ys = ""
 while r != "":
-    y += r
+    ys += r
     r = f.readline()
     r = r.strip()
 f.close()
 if test == True:
-    x = "PLEASANTLY"
-    y =  "MEANLY"
+    xs = "PLEASANTLY"
+    ys =  "MEANLY"
 
-score = alignCost(x,y)
-print score
+x,y,m = alignCost(xs,ys,-11,-1)
+a,b,maxitem = traceback(xs,ys,x,y,m,-11,-1)
+a.reverse()
+b.reverse()
+a = ''.join(a)
+b = ''.join(b)
+if test:
+    for c in x:
+        print c
+    for c in y:
+        print c
+    for c in m:
+        print c
+print maxitem
+print a
+print b
+
