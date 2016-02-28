@@ -1,5 +1,4 @@
 def alignCost(x,y):
-    result = [[0]*(len(y)+1) for c in range(len(x)+1)]
     mp = [
             [4,'#',0,-2,-1,-2, 0,-2,-1,'#',-1,-1,-1,-2,'#',-1,-1,-1, 1, 0,'#',0,-3,'#',-2],
             [],
@@ -27,6 +26,7 @@ def alignCost(x,y):
              [],
              [-2,'#',-2,-3,-2,3,-3,2,-1,'#',-2,-1,-1,-2,'#',-3,-1,-2,-2,-2,'#',-1,2,'#',7]
              ]
+    result = [[0]*(len(y)+1) for c in range(len(x)+1)]
     for i in xrange(len(x)+1):
         result[i][0] = -5*i
     for j in xrange(len(y)+1):
@@ -34,9 +34,9 @@ def alignCost(x,y):
     for i in xrange(len(x)):
         for j in xrange(len(y)):
             result[i+1][j+1] = max(
-                    cost(x[i],y[j],mp) + result[i][j],
-                    -5 + result[i][j+1],
-                    -5 + result[i+1][j]
+                cost(x[i],y[j],mp) + result[i][j],
+                -5 + result[i][j+1],
+                -5 + result[i+1][j]
                     )
     return result[-1][-1]
 
