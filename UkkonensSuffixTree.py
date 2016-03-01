@@ -61,13 +61,16 @@ class SuffixTree():
         self.lastinsert = node
 
 
-    def updateApEdge(self):
+    def updateApEdge(self,i):
         print "updateApEdge"
         edge = self.cur[0].children[self.cur[1]]
-        if edge.start + self.cur[2] == edge.end:
-            self.cur[0] = self.cur[0].children[self.cur[1]]
-            self.cur[1] = None
-            self.cur[2] = 0
+        if edge.start + self.cur[2] >= edge.end:
+            self.cur[0] = edge
+            self.cur[2] -= edge.end - edge.start
+            if self.cur[2] != 0:
+                self.cur[1] = self.s[i-self.cur[2]]
+            else:
+                self.cur[1] = None
 
     def matchFinder(self,i,count = 0):
         print "match with cur", self.cur
@@ -78,7 +81,7 @@ class SuffixTree():
                     self.cur[1] = self.s[i]
                 self.cur[2] += 1
                 self.remainder += 1
-                self.updateApEdge()
+                self.updateApEdge(i)
                 print "cur before return",self.cur
                 return True
         else:
@@ -89,19 +92,14 @@ class SuffixTree():
                 print "long enough edge"
                 if self.s[edge.start + self.cur[2]] == self.s[i]:
                     self.cur[2] += 1
-                    self.updateApEdge()
+                    self.updateApEdge(i)
                     self.remainder += 1
                     return True
             else:
                 print "short edge"
                 if self.cur[2] > 0:
                     print self.cur
-                    self.cur[0] = edge
-                    self.cur[2] -= edge.end-edge.start
-                    if self.cur[2] != 0:
-                        self.cur[1] = self.s[i-self.cur[2]]
-                    else:
-                        self.cur[1] = None
+                    self.updateApEdge(i)
                     print self.cur
                     if self.s[edge.end-1] != self.s[i]:
                         print "matchFinder recurse"
