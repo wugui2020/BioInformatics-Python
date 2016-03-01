@@ -31,18 +31,18 @@ class SuffixTree():
 
     def treeBuild(self,s):
         for i in xrange(len(s)):
-            # print "============================"
-            # print self
-            # print s[i] * 20
+            print "============================"
+            print self
+            print s[i] * 20
             self.lastinsert = None
-            # print self.ap, self.remainder
+            print self.ap, self.remainder
             self.addChar(i)
-            # print "post",self
-            # print "post",self.ap, self.remainder
-            # print "============================"
+            print "post",self
+            print "post",self.ap, self.remainder
+            print "============================"
 
     def insertNew(self,i):
-        # print "new edge"
+        print "new edge"
         newleave = Node(i,i+1,self)
         self.cur[0].children[self.s[i]] = newleave
         self.leaves.append(newleave)
@@ -51,18 +51,18 @@ class SuffixTree():
             self.linkMaker(self.cur[0])
 
     def linkMaker(self,node):
-        # print "linkMaker"
+        print "linkMaker"
         if self.lastinsert != None:
-            # print "made a link"
-            # print "from",self.s[self.lastinsert.start:self.lastinsert.end],
-            # print " to",self.s[node.start:node.end]
+            print "made a link"
+            print "from",self.s[self.lastinsert.start:self.lastinsert.end],
+            print " to",self.s[node.start:node.end]
             self.lastinsert.link = node
-        # print "lastinsert updated"
+        print "lastinsert updated"
         self.lastinsert = node
 
 
     def updateApEdge(self):
-        # print "updateApEdge"
+        print "updateApEdge"
         edge = self.cur[0].children[self.cur[1]]
         if edge.start + self.cur[2] == edge.end:
             self.cur[0] = self.cur[0].children[self.cur[1]]
@@ -70,63 +70,66 @@ class SuffixTree():
             self.cur[2] = 0
 
     def matchFinder(self,i,count = 0):
+        print "match with cur", self.cur
         if self.cur[2] == 0:
             if self.s[i] in self.cur[0].children:
-                # print "new match"
+                print "new match"
                 if self.cur[1] == None:
                     self.cur[1] = self.s[i]
                 self.cur[2] += 1
                 self.remainder += 1
                 self.updateApEdge()
-                # print self.cur
+                print "cur before return",self.cur
                 return True
         else:
             edge = self.cur[0].children[self.cur[1]]
-            # print "string", self.s[edge.start:edge.end]
+            print "string", self.s[edge.start:edge.end]
 
             if edge.start + self.cur[2] < edge.end:
+                print "long enough edge"
                 if self.s[edge.start + self.cur[2]] == self.s[i]:
                     self.cur[2] += 1
                     self.updateApEdge()
                     self.remainder += 1
                     return True
             else:
+                print "short edge"
                 if self.cur[2] > 0:
-                    # print self.cur
+                    print self.cur
                     self.cur[0] = edge
                     self.cur[2] -= edge.end-edge.start
                     if self.cur[2] != 0:
                         self.cur[1] = self.s[i-self.cur[2]]
                     else:
                         self.cur[1] = None
-                    # print self.cur
+                    print self.cur
                     if self.s[edge.end-1] != self.s[i]:
-                        # print "matchFinder recurse"
+                        print "matchFinder recurse"
                         return self.matchFinder(i)
                     else:
-                        # print "Matched"
+                        print "Matched"
                         self.remainder += 1
                         return True
-        # print "match False"
+        print "match False"
 
 
 
         return False 
 
     def linkTracker(self):
-        # print "linkTracker"
+        print "linkTracker"
         if self.cur[0].link:
-            # print "follow the link", self.s[self.cur[0].link.start:self.cur[0].link.end]
+            print "follow the link", self.s[self.cur[0].link.start:self.cur[0].link.end]
             self.cur[0] = self.cur[0].link
         else:
-            # print "get back to root"
+            print "get back to root"
             self.cur[0] = self.root
 
     def apUpdate(self,i,update):
         self.ap[2] -= 1
-        # print "updateing ap", self.s[i-self.ap[2]]
+        print "updateing ap", self.s[i-self.ap[2]]
         self.ap[1] = self.s[i-self.ap[2]]
-        # print self.ap
+        print self.ap
 
     def mismatchFixer(self,i):
         # fix the new mixmatch
@@ -135,37 +138,39 @@ class SuffixTree():
         self.remainder = 1
         while count != 0:
             self.cur = self.ap[:]
-            # print "count", count 
-            # print "inserting", self.s[i-count+1:i+1]
-            # print "cur",self.cur
-            # print "ap",self.ap
+            print "count", count 
+            print "inserting", self.s[i-count+1:i+1]
+            print "cur",self.cur
+            print "ap",self.ap
             if self.cur[1] == None:
                 if self.matchFinder(i,count) != True:
-                    # print "an new edge inserted"
+                    print "an new edge inserted"
                     self.insertNew(i)
                     self.linkTracker()
                     self.ap = self.cur[:]
                 else:
                     if count == 1:
+                        print "last insert"
                         self.ap = self.cur[:]
                     else:
+                        print "inserting"
                         self.remainder -= 1
                         self.linkTracker()
-                        self.ap = self.cur[:]
+                        self.apUpdate(i,count)
 
                     
             else:
                 if self.matchFinder(i,count) != True:
                     if self.cur[2] == 0:
-                        # print "an new edge inserted"
+                        print "an new edge inserted"
                         self.insertNew(i)
                         self.linkTracker()
                         self.ap = self.cur[:]
 
                     else:
-                        # print "spliting",self.cur
+                        print "spliting",self.cur
                         child = self.cur[0].children[self.cur[1]]
-                        # print self.s[child.start:child.end]
+                        print self.s[child.start:child.end]
                         self.splitEdge(i)
                         if self.cur[0] != self.root: #and self.ap[0].link != None:
                             self.linkTracker()
@@ -178,22 +183,22 @@ class SuffixTree():
                     else:
                         self.remainder -= 1
                         self.linkTracker()
-                        self.ap = self.cur[:]
-            # print self.cur
-            # print self.ap
-            # print self
+                        self.apUpdate(i,count)
+            print self.cur
+            print self.ap
+            print self
             count -= 1 
 
     def addChar(self,i):
-        # print self.ap[0].children
+        print self.ap[0].children
         for node in self.leaves:
             node.end += 1
         self.cur = self.ap
         if self.cur[1] == None:
 
-            # print "no existing match"
+            print "no existing match"
             if self.matchFinder(i) == False:
-                # print "mismatch"
+                print "mismatch"
                 if self.remainder == 1:
                     self.insertNew(i)
                 else:
@@ -204,7 +209,7 @@ class SuffixTree():
             if self.matchFinder(i) == False:
                 self.mismatchFixer(i)
                 pass
-        # print "Done"
+        print "Done"
 
     def splitEdge(self,i):
         edge = self.cur[0].children[self.cur[1]]
@@ -217,9 +222,9 @@ class SuffixTree():
         newchild.children = edge.children
         newleave.child = edge.children
 
-        # print newnode.children
+        print newnode.children
         self.nodes.append(newnode)
-        # print newchild.end , i
+        print newchild.end , i
         if newleave.end == i+1:
             self.leaves.append(newleave) 
         if newchild.end == i+1:
@@ -227,7 +232,7 @@ class SuffixTree():
         for leavei in xrange(len(self.leaves)):
             if self.leaves[leavei] == edge:
                 self.leaves.pop(leavei)
-                # print "poped!!"
+                print "poped!!"
                 pop = True
                 break
         self.linkMaker(newnode)
@@ -249,8 +254,8 @@ class SuffixTree():
 
 f = open("rosalind_suff.txt",'r')
 s = f.readline()
-# print s
-# s = "asdfadsfafasdgsdfas"
+print s
+s = "ATAAATG$"
 a = SuffixTree(s,20)
 print a
 f.close()
